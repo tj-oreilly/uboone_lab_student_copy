@@ -24,8 +24,7 @@ Useful functions that are used throughout the lab.
 
 
 #### event_display.ipynb & EventDisplay.py
-Currently a work in progress, but allows you to visualise the Events.
-- Need to allow for listing of all events as they are not linearly spread throughout the .h5 file
+Allows for visualisation of events.
 
 #### keras_example.ipynb
 An example of a simple NN in action for interest of the reader.
