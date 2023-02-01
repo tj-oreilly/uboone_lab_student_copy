@@ -31,3 +31,12 @@ Allows for visualisation of events.
 
 #### keras_example.ipynb
 An example of a simple NN in action for interest of the reader.
+
+### INSTALLATION AND USAGE ON YEAR 3 LAB MACHINES
+
+##### Ensure you have approximately 10GB of space on your OneDrive for this method
+
+- Download this repository either via git or by pressing the green "Code" button and then "Download ZIP". 
+- Extract the ZIP file into your local OneDrive folder.
+- Download the bnb_run3_mc_larcv.h5 file from either USB or onedrive link (provided by TAs), and place within the /data/ folder
+- Being reading through the lab script, good luck!
