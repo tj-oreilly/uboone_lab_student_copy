@@ -12,7 +12,9 @@ This folder contains almost everything that is needed to run the lab, including:
 
 Missing 1 file due to github's restrictions on file sizes.
 - bnb_run3_mc_larcv.h5: Event display file (8.8GB).
-This file is only needed for the 'event display' component of the lab
+This file is only needed for the 'event display' component of the lab, and will be provided either via pen-drive or link.
+
+**Be aware that the larger files in /data/ have to be downloaded individually on github, as they were stored via LFS, click on each file in the github directory and download separately. You will know if this has worked due to the file-sizes being correct.**
 
 
 #### MainAnalysis_template.ipynb
