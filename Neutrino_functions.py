@@ -49,11 +49,11 @@ def histogram_plot(MC_frame, variable, bins, name, scaling, xlims=[], plot_fig =
 
         fig = plt.figure(figsize=(15,10))
         
-        labels=[r"$\nu$ NC", r"$\nu_{\mu}$ CC", r"$\nu_e$ CC", r"EXT", r"Out. fid. vol.", r"Cosmic", r"Uncertainty"]
+        labels=[r"$\nu$ NC", r"$\nu_{\mu}$ CC", r"$\nu_e$ CC", r"EXT", r"Out. fid. vol.", r"mis ID", r"Uncertainty"]
         sns.histplot(data=MC_frame, x= variable , hue="category", multiple="stack", palette = 'deep', weights = scaling, bins=bins, binrange=xlims, legend = False)
         plt.bar(new_bins, 2*UNC, width = w, bottom = np.array(MC_heights)-UNC, color='grey', alpha=0.7, hatch='/')
 
-        plt.legend(title='Run 3', loc='upper right', labels=[r"$\nu$ NC", r"$\nu_{\mu}$ CC", r"$\nu_e$ CC", r"EXT", r"Out. fid. vol.", r"Cosmic",  r"Uncertainty"])
+        plt.legend(title='Run 3', loc='upper right', labels=[r"$\nu$ NC", r"$\nu_{\mu}$ CC", r"$\nu_e$ CC", r"EXT", r"Out. fid. vol.", r"mis ID",  r"Uncertainty"])
     
         if (isinstance(dataFrame,pd.core.frame.DataFrame) and plot_data == True):
             fig_data = plt.figure(figsize=(15,10))
@@ -72,7 +72,7 @@ def histogram_plot(MC_frame, variable, bins, name, scaling, xlims=[], plot_fig =
             new_bins = [start+w[0]/2 for start in x]
             #y_real = np.array(y_real)
             plt.errorbar(new_bins, heights , xerr=w[0]/2, fmt='.k')
-            plt.legend(title='Run 3', loc='upper right', labels=[r"$\nu$ NC", r"$\nu_{\mu}$ CC", r"$\nu_e$ CC", r"EXT", r"Out. fid. vol.", r"Cosmic",  r"Uncertainty", r"Data"])
+            plt.legend(title='Run 3', loc='upper right', labels=[r"$\nu$ NC", r"$\nu_{\mu}$ CC", r"$\nu_e$ CC", r"EXT", r"Out. fid. vol.", r"mis ID",  r"Uncertainty", r"Data"])
 
     
         elif(isinstance(dataFrame,pd.core.frame.DataFrame) != True and plot_data == True):
