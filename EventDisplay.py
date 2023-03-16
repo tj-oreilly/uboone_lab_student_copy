@@ -43,7 +43,7 @@ def PlaneLabel(plane):
     elif(plane==1):
         plane_label='V'
     elif(plane==2):
-        plane_label='Y'
+        plane_label='W'
     else:
         print("Error, plane number out of range")
     return plane_label 
