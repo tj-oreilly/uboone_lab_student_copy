@@ -7,15 +7,17 @@ This folder contains almost everything that is needed to run the lab, including:
 4 files included:
 - DataSet_LSND.csv: Dataset for LSND used as comparison (42.9KB).
 - DataSet_MiniBooNE.csv: Dataset for MiniBoone used as comparison (17.0KB).
-- data_flattened.pkl: True data from MicroBooNE flattened (24.2MB).*
-- MC_EXT_flattened.pkl: MC and EXT data from simulations & MicroBooNE (111.4MB).*
+- data_flattened.pkl: True data from MicroBooNE flattened (24.2MB). (A)
+- MC_EXT_flattened.pkl: MC and EXT data from simulations & MicroBooNE (111.4MB). (A)
 
 Missing 1 file due to github's restrictions on file sizes.
 - bnb_run3_mc_larcv.h5: Event display file (8.8GB).
 This file is only needed for the 'event display' component of the lab, and will be provided either via pen-drive or link.
 - oscillated_data.pkl: Data file for usage in the closure test. (134MB)
 
-* The main pkl files require GitLFS to download, or can be downloaded manually from the github page, but will appear corrupted if the repository is downloaded as a zip.
+
+
+(A) - The main pkl files require GitLFS to download, or can be downloaded manually from the github page, but will appear corrupted if the repository is downloaded as a zip.
 
 **Be aware that the larger files in /data/ have to be downloaded individually on github, as they were stored via LFS, click on each file in the github directory and download separately. You will know if this has worked due to the file-sizes being correct.**
 
