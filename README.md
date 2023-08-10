@@ -15,6 +15,8 @@ Missing 2 files due to github's restrictions on file sizes.
 This file is only needed for the 'event display' component of the lab, and will be provided either via pen-drive or link.
 - oscillated_data.pkl: Data file for usage in the closure test. (134MB)
 
+#### NOTE! All files now accessible via this link for University of Manchester students.
+https://livemanchesterac-my.sharepoint.com/:u:/g/personal/john_waiton_postgrad_manchester_ac_uk/ERr7l9mqqGZIveVcVG3UD2wBrCHCYTcJPT7jIpyBOM4zZg?e=Bh2uvB
 
 
 (A) - The main pkl files require GitLFS to download, or can be downloaded manually from the github page, but will appear corrupted if the repository is downloaded as a zip.
