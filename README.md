@@ -10,8 +10,8 @@ This folder contains almost everything that is needed to run the lab, including:
 - data_flattened.pkl: True data from MicroBooNE flattened (24.2MB). (A)
 - MC_EXT_flattened.pkl: MC and EXT data from simulations & MicroBooNE (111.4MB). (A)
 
-Missing 1 file due to github's restrictions on file sizes.
-- bnb_run3_mc_larcv.h5: Event display file (8.8GB).
+Missing 2 files due to github's restrictions on file sizes.
+- bnb_run3_mc_larcv_slimmed.h5: Event display file (77.3MB).
 This file is only needed for the 'event display' component of the lab, and will be provided either via pen-drive or link.
 - oscillated_data.pkl: Data file for usage in the closure test. (134MB)
 
