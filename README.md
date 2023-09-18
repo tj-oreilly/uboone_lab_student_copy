@@ -39,7 +39,8 @@ An example of a simple NN in action for interest of the reader.
 
 ##### Ensure you have approximately 10GB of space on your OneDrive for this method
 
-- Download this repository either via git or by pressing the green "Code" button and then "Download ZIP". 
-- Extract the ZIP file into your local OneDrive folder.
-- Download the bnb_run3_mc_larcv.h5 file from either USB or onedrive link (provided by TAs), and place within the /data/ folder
+- Download this repository either via git or by pressing the green "Code" button and then "Download ZIP".
+- Download the data required from the above mentioned 'livemanchesterac' link. 
+- Extract the *uboone_lab_student_copy* folder into your local OneDrive folder.
+- Extract the *data.zip* folder into *uboone_lab_student_copy/data/* folder.
 - Begin reading through the rest of the lab script, good luck!
