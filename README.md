@@ -17,10 +17,6 @@ Data no longer included here, available at the link below.
 https://livemanchesterac-my.sharepoint.com/:u:/g/personal/john_waiton_postgrad_manchester_ac_uk/ERr7l9mqqGZIveVcVG3UD2wBrCHCYTcJPT7jIpyBOM4zZg?e=Bh2uvB
 
 
-(A) - The main pkl files require GitLFS to download, or can be downloaded manually from the github page, but will appear corrupted if the repository is downloaded as a zip.
-
-**Be aware that the larger files in /data/ have to be downloaded individually on github, as they were stored via LFS, click on each file in the github directory and download separately. You will know if this has worked due to the file-sizes being correct.**
-
 
 #### MainAnalysis_template.ipynb
 Template for student's usage throughout the lab.
