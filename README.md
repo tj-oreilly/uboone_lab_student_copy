@@ -4,17 +4,18 @@
 This folder contains almost everything that is needed to run the lab, including:
 
 #### /data/
-4 files included:
+Data no longer included here, available at the link below.
+6 files included:
 - DataSet_LSND.csv: Dataset for LSND used as comparison (42.9KB).
 - DataSet_MiniBooNE.csv: Dataset for MiniBoone used as comparison (17.0KB).
-- data_flattened.pkl: True data from MicroBooNE flattened (24.2MB).
-- MC_EXT_flattened.pkl: MC and EXT data from simulations & MicroBooNE (111.4MB).
+- data_flattened.pkl: True data from MicroBooNE flattened (24.2MB). (A)
+- MC_EXT_flattened.pkl: MC and EXT data from simulations & MicroBooNE (111.4MB). (A)
+- bnb_run3_mc_larcv_slimmed.h5: Event display file (77.3MB).
+- oscillated_data.pkl: Data file for usage in the closure test. (140MB)
 
-Missing 1 file due to github's restrictions on file sizes.
-- bnb_run3_mc_larcv.h5: Event display file (8.8GB).
-This file is only needed for the 'event display' component of the lab, and will be provided either via pen-drive or link.
+#### NOTE! All files now accessible via this link for University of Manchester students.
+https://livemanchesterac-my.sharepoint.com/:u:/g/personal/john_waiton_postgrad_manchester_ac_uk/ERr7l9mqqGZIveVcVG3UD2wBrCHCYTcJPT7jIpyBOM4zZg?e=Bh2uvB
 
-**Be aware that the larger files in /data/ have to be downloaded individually on github, as they were stored via LFS, click on each file in the github directory and download separately. You will know if this has worked due to the file-sizes being correct.**
 
 
 #### MainAnalysis_template.ipynb
@@ -38,7 +39,8 @@ An example of a simple NN in action for interest of the reader.
 
 ##### Ensure you have approximately 10GB of space on your OneDrive for this method
 
-- Download this repository either via git or by pressing the green "Code" button and then "Download ZIP". 
-- Extract the ZIP file into your local OneDrive folder.
-- Download the bnb_run3_mc_larcv.h5 file from either USB or onedrive link (provided by TAs), and place within the /data/ folder
+- Download this repository either via git or by pressing the green "Code" button and then "Download ZIP".
+- Download the data required from the above mentioned 'livemanchesterac' link. 
+- Extract the *uboone_lab_student_copy* folder into your local OneDrive folder.
+- Extract the *data.zip* folder into *uboone_lab_student_copy/data/* folder.
 - Begin reading through the rest of the lab script, good luck!

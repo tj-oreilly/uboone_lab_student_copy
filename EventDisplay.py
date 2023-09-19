@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 import matplotlib.font_manager as fm 
 import numpy as np
+import matplotlib.colors as colors
 
 
 
@@ -43,7 +44,7 @@ def PlaneLabel(plane):
     elif(plane==1):
         plane_label='V'
     elif(plane==2):
-        plane_label='Y'
+        plane_label='W'
     else:
         print("Error, plane number out of range")
     return plane_label 
@@ -58,6 +59,8 @@ def DatasetSelector(dataset):
         file='bnb_run3_dirt_larcv.h5'
     elif(dataset == 'ext'):
         file='bnb_run3_ext_larcv.h5'
+    elif(dataset == 'slim'):
+        file='bnb_run3_mc_larcv_slimmed.h5'
     else:
         print('Error, wrong dataset input')
     return file 
@@ -93,7 +96,8 @@ def EvDisp(run,subrun,event,plane,dataset,debug=False):
     plt.title(plot_title)
     plt.xlabel("Wire number")
     plt.ylabel("Time tick")
-    ax1.imshow(image[entry,plane,:,:],cmap='turbo',origin="lower")
+    ax1.imshow(image[entry,plane,:,:],cmap='jet', origin="lower", norm=colors.PowerNorm(gamma=0.35, vmin=np.min(image[entry,plane,:,:]), vmax=np.max(image[entry,plane,:,:])))
+    #ax1.imshow(image[entry,plane,:,:],cmap='turbo',origin="lower")
     scalebar1= AnchoredSizeBar(ax1.transData,
                                 100,'30 cm','lower left',
                                 color='white',
