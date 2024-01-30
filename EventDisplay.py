@@ -74,7 +74,6 @@ def EvDisp(run,subrun,event,plane,dataset,debug=False):
     producer = 'wire'
     f = h5py.File(input_file,'r')
     event_id_list = f['eventid']
-    print(event_id_list[1])
     entry = SearchID(run,subrun,event,event_id_list)
     # restating values of dataset, event, entry, as they can be modified if incorrect value is selected.
     event = event_id_list[entry][1]
