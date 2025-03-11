@@ -24,7 +24,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import ConfusionMatrixDisplay
 
-CACHING = False
+CACHING = True
 FOREST_CACHE = "./cache/random_forest_cache.pkl"
 BINS = 20
 
@@ -143,8 +143,9 @@ def train_random_forest(MC_data, features):
   """
   """
 
-  MC_data = MC_data[(MC_data.category != 21) & (MC_data.category != 10)].copy(deep=True) # Remove muon and electron events?
-  
+  # Remove muon and electron events?
+  MC_data = MC_data[(MC_data.category != 21) & (MC_data.category != 10)] 
+
   # Setting up input parameters for random forest.
   X = MC_data[features]
   y = np.array(MC_data['category'])
@@ -343,7 +344,6 @@ def main():
   MC_data = MC_data.drop('Subevent', axis = 1)
 
   # Random forest training to improve cuts
-  data["category"] = [21 for i in range(len(data))]
   data = categorise_data(MC_data, data)
 
   # Apply selection cuts
@@ -351,8 +351,12 @@ def main():
   MC_data = Selections(MC_data, False)
 
   # Only include muon events now
-  MC_data = MC_data[MC_data["category"] == 21]
-  data = data[data["category"] == 21]
+  MC_data = MC_data[MC_data["category"] == 21] 
+
+  # This isn't working....
+  data = data[data["category"].isna()] # Rows that haven't been categorised -> not background
+
+
 
   print(len(data))
 
