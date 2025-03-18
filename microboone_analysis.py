@@ -84,9 +84,9 @@ def Selections(frame, show_plots=True):
     combined_cut = combined_cut & cut
     filtered_frame = ApplySelection(combined_cut, frame, filtered_frame, purity_efficiency, total_count)
 
-  print("Purity and efficiency:")
-  for pe in purity_efficiency:
-    print(pe)
+  # print("Purity and efficiency:")
+  # for pe in purity_efficiency:
+  #   print(pe)
 
   if not show_plots:
     return filtered_frame
@@ -144,7 +144,7 @@ def train_random_forest(MC_data, features):
   """
 
   # Remove muon and electron events?
-  MC_data = MC_data[(MC_data.category != 21) & (MC_data.category != 10)] 
+  # MC_data = MC_data[(MC_data.category != 21) & (MC_data.category != 10)] 
 
   # Setting up input parameters for random forest.
   X = MC_data[features]
@@ -194,7 +194,7 @@ def train_random_forest(MC_data, features):
   # Random forest training
   start_time = time.time()
   print("Training Random Forest... ", end="")
-  rf = RandomForestClassifier(random_state=1, n_estimators=1000, max_depth=8, criterion="gini")
+  rf = RandomForestClassifier(random_state=1, n_estimators=10000, max_depth=12, criterion="gini")
   rf.fit(x_train, y_train)
 
   time_taken = time.time() - start_time
@@ -342,7 +342,7 @@ def main():
   MC_file = './data/MC_EXT_flattened.pkl'
   MC_data = pd.read_pickle(MC_file)
   MC_data = MC_data.drop('Subevent', axis = 1)
-
+ 
   # Random forest training to improve cuts
   data = categorise_data(MC_data, data)
 
@@ -350,15 +350,9 @@ def main():
   data = Selections(data, False)
   MC_data = Selections(MC_data, False)
 
-  # Only include muon events now
+  # Only include muon events after cuts
   MC_data = MC_data[MC_data["category"] == 21] 
-
-  # This isn't working....
-  data = data[data["category"].isna()] # Rows that haven't been categorised -> not background
-
-
-
-  print(len(data))
+  data = data[data["category"] == 21]
 
   # Plot the data after the selection cuts
   # plot_histograms(data)
@@ -399,7 +393,7 @@ def main():
     current_percent = int((i * 100) / DIMS[1])
     if current_percent > percent:
       percent = current_percent
-      print(f"{percent}%")
+      # print(f"{percent}%")
 
   print(f"Minimum (theta, m): {min_loc}")
   print(f"Minimum chi squared: {min_chi_squared}")
