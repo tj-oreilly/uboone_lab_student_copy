@@ -35,6 +35,9 @@ def ApplySelection(selection, frame, filtered_frame, purity_efficiency, totalCou
 
   new_frame = frame[selection]
 
+  if not "category" in new_frame:
+    return new_frame
+
   signalCount = len(new_frame[(new_frame['category'] == 21) | (new_frame['category'] == 10)])
 
   purity = signalCount / len(new_frame)
@@ -47,31 +50,11 @@ def ApplySelection(selection, frame, filtered_frame, purity_efficiency, totalCou
 
 def Selections(frame, show_plots=True):
     
-  # Basic variables present in dataframe 
-  trk_start_x_v = frame['trk_sce_start_x_v']        # cm
-  trk_start_y_v = frame['trk_sce_start_y_v']        # cm
-  trk_start_z_v = frame['trk_sce_start_z_v']        # cm
-  trk_end_x_v = frame['trk_sce_end_x_v']            # cm
-  trk_end_y_v = frame['trk_sce_end_y_v']            # cm
-  trk_end_z_v = frame['trk_sce_end_z_v']            # cm
-  reco_x = frame['reco_nu_vtx_sce_x']               # cm
-  reco_y = frame['reco_nu_vtx_sce_y']               # cm
-  reco_z = frame['reco_nu_vtx_sce_z']               # cm
-  topological = frame['topological_score']          # N/A
-  trk_score_v = frame['trk_score_v']                # N/A
-  trk_dis_v = frame['trk_distance_v']               # cm
-  trk_len_v = frame['trk_len_v']                    # cm
-  trk_energy_tot = frame['trk_energy_tot']          # GeV 
-  
-  
   selection_cuts = [
     (frame['trk_len_v'] > -1000.0) & (frame['trk_len_v'] < 1000.0), # Base cuts
     (frame['trk_energy_tot'] < 5000.0),  # Non-physical values
-    (frame['trk_energy_tot'] < 2.0),
-    (frame['topological_score'] > 0.4),
-    (frame['trk_distance_v'] < 5.0),
-    (frame['reco_nu_vtx_sce_x'] > 50.0),
-    (frame['reco_nu_vtx_sce_x'] < 200.0),
+    (frame['trk_energy_tot'] < 4.0),
+    # (frame['topological_score'] > 0.4),
   ]
 
   purity_efficiency = []  # Store the purity and efficiency for each consecutive cut
@@ -213,7 +196,7 @@ def train_random_forest(MC_data, features):
 
   return rf
 
-def categorise_data(MC_data, data):
+def categorise_data_forest(MC_data, data):
   """
   Trains a ML algorithm to categorise the type of event based on the track data. The training input 
   is the Monte-Carlo data.
@@ -285,7 +268,7 @@ def plot_histograms(data):
         data=data, 
         x=var, 
         multiple="stack", 
-        hue="category", 
+        # hue="background", 
         palette='deep', 
         weights=current_weights, 
         bins=HISTOGRAM_BINS, 
@@ -299,13 +282,13 @@ def plot_histograms(data):
       # Set xlim to min and max of the data
       ax.set_xlim([np.min(data[var]), np.max(data[var])])
       
-      if use_legend:
-        ax.legend(
-          title='Category',
-          fontsize=12, 
-          loc='upper right',
-          labels=[r"$\nu$ NC", r"$\nu_{\mu}$ CC", r"$\nu_e$ CC", r"EXT", r"Out. fid. vol.", r"mis ID"]
-        )
+      # if use_legend:
+      #   ax.legend(
+      #     title='Category',
+      #     fontsize=12, 
+      #     loc='upper right',
+      #     labels=[r"$\nu$ NC", r"$\nu_{\mu}$ CC", r"$\nu_e$ CC", r"EXT", r"Out. fid. vol.", r"mis ID"]
+      #   )
 
       pos = ax.get_position()
       ax.set_position([pos.x0, pos.y0, pos.width, pos.width * 0.7])
@@ -316,12 +299,12 @@ def plot_histograms(data):
 
   handles, labels = axes[0].get_legend_handles_labels()
 
-  fig.legend(handles, 
-            labels=[r"$\nu$ NC", r"$\nu_{\mu}$ CC", r"$\nu_e$ CC", r"EXT", r"Out. fid. vol.", r"mis ID"],
-            title='Category',
-            fontsize=12,
-            loc='center right',  # Position on the right
-            bbox_to_anchor=(0.85, 0.5))  # Adjust as needed - (x, y) position
+  # fig.legend(handles, 
+  #           labels=[r"$\nu$ NC", r"$\nu_{\mu}$ CC", r"$\nu_e$ CC", r"EXT", r"Out. fid. vol.", r"mis ID"],
+  #           title='Category',
+  #           fontsize=12,
+  #           loc='center right',  # Position on the right
+  #           bbox_to_anchor=(0.85, 0.5))  # Adjust as needed - (x, y) position
     
   # Add overall title
   plt.suptitle("Data from all variables", fontsize=16, y=0.98)
@@ -330,6 +313,28 @@ def plot_histograms(data):
   plt.tight_layout(pad=1.0, h_pad=15.0, w_pad=10.0, rect=[0, 0, 1, 0.95])
 
   plt.show()
+
+def categorise_data(MC_data, data):
+
+  import neural_network
+
+  MC_data = MC_data.copy(deep=True)
+  data = data.copy(deep=True)
+
+  nn = neural_network.NeuralNetwork(MC_data, data)
+  nn.prepare_data() # Restructure columns of data
+
+  # Define features and target
+  X = nn.MC_data.drop(columns=['category', 'weight']) # Don't use category or weight for neural net
+  y = nn.MC_data['category'].copy()
+  mc_weights = nn.MC_data['weight'].copy()
+
+  feature_names = X.columns.tolist()
+  nn.train_evaluate_model(X, y, mc_weights, feature_names)
+
+  nn.categorise_data()
+
+  return nn.data, nn.MC_data
 
 def main():
 
@@ -343,16 +348,31 @@ def main():
   MC_data = pd.read_pickle(MC_file)
   MC_data = MC_data.drop('Subevent', axis = 1)
  
-  # Random forest training to improve cuts
-  data = categorise_data(MC_data, data)
-
   # Apply selection cuts
+  # initialMC = len(MC_data)
+
   data = Selections(data, False)
   MC_data = Selections(MC_data, False)
 
+  # print(f"MC cut efficiency {(len(MC_data)/float(initialMC)):.2f}")
+
+  # plot_histograms(MC_data)
+
+  MC_copy = MC_data.copy(deep=True)
+
+  # Neural network training to improve cuts
+  data, MC_data = categorise_data(MC_data, data)
+
+  MC_data["true_E"] = MC_copy["true_E"]
+  MC_data["weight"] = MC_copy["weight"]
+
   # Only include muon events after cuts
-  MC_data = MC_data[MC_data["category"] == 21] 
-  data = data[data["category"] == 21]
+  MC_data = MC_data[MC_data["background"] == False] 
+
+  initialSize = len(data)
+  data = data[data["background"] == False]
+  
+  print(f"Efficiency: {(len(data)/float(initialSize)):.2f}")
 
   # Plot the data after the selection cuts
   # plot_histograms(data)
@@ -381,8 +401,8 @@ def main():
     for j,y in enumerate(delta_m2):
       
       # Disappearance probability
-      true_E = np.array(MC_data.loc[MC_data["category"] == 21, "true_E"])
-      MC_data.loc[MC_data["category"] == 21, "dis_prob"] = 1.0 - oscillation_probability(x, y, 0.475, true_E)
+      true_E = np.array(MC_data["true_E"])
+      MC_data["dis_prob"] = 1.0 - oscillation_probability(x, y, 0.475, true_E)
 
       chi_squared_values[i,j] = get_chi_squared(MC_data, data)
 
