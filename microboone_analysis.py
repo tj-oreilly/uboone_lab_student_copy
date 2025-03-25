@@ -131,6 +131,9 @@ def get_chi_squared(sim_data, real_data):
     # Calculate chi squared
     chi_squared = 0.0
     for i, _ in enumerate(sim_hist):
+        if sim_hist[i] < 10 or real_hist[i] < 10:  # Skip empty or near-empty bins
+            continue
+
         chi_squared += ((sim_hist[i] - real_hist[i]) ** 2) / ((sim_hist[i] * 0.15) ** 2)
 
     return chi_squared
@@ -365,11 +368,11 @@ def categorise_data(MC_data, data):
         columns=["category", "weight"]
     )  # Don't use category or weight for neural net
     y = nn.MC_data["category"].copy()
+
     mc_weights = nn.MC_data["weight"].copy()
-
     feature_names = X.columns.tolist()
-    nn.train_evaluate_model(X, y, mc_weights, feature_names)
 
+    nn.train_evaluate_model(X, y, mc_weights, feature_names)
     nn.categorise_data()
 
     return nn.data, nn.MC_data
@@ -402,7 +405,9 @@ def main():
     MC_copy = MC_data.copy(deep=True)
 
     # Neural network training to improve cuts
-    data, MC_data = categorise_data_forest(MC_data, data)
+    data, MC_data = categorise_data(MC_data, data)
+
+    # data, MC_data = categorise_data_forest(MC_data, data)
 
     # Copy back data removed for nn training
     MC_data["true_E"] = MC_copy["true_E"]
@@ -412,8 +417,8 @@ def main():
     # Only include muon events after cuts
     initial_MC_len = len(MC_data)
 
-    MC_data = MC_data[~MC_data["background"]]
-    data = data[~data["background"]]
+    MC_data = MC_data[MC_data["background"] == False]
+    data = data[data["background"] == False]
 
     print(f"Efficiency of nn cuts: {(len(MC_data) / float(initial_MC_len)):.2f}")
     print(
@@ -503,6 +508,35 @@ def main():
         levels=[min_chi_squared + del_chi2],
         colors=["red"],
     )
+
+    # Save contour
+    # with open("./cache/min_chi_squared.txt", "w") as file:
+    #     file.write(str(min_chi_squared))
+    #
+    # with open("./cache/chi_squared.pkl", "wb") as file:
+    #     pickle.dump(chi_squared_values, file)
+
+    # Plot any previously cached contour
+    try:
+        cache_min_chi = None
+        cache_chi_squareds = None
+
+        with open("./cache/min_chi_squared.txt", "r") as file:
+            cache_min_chi = file.read()
+
+        with open("./cache/chi_squared.pkl", "rb") as file:
+            cache_chi_squareds = pickle.load(file)
+
+        plt.contour(
+            scaled_theta,
+            xv,
+            cache_chi_squareds,
+            levels=[float(cache_min_chi) + del_chi2],
+            colors=["lime"],
+        )
+
+    except:
+        pass
 
     plt.xlabel(
         r"$sin^2(2\theta_{\mu e})=sin^2(\theta_{24})sin^2(2\theta_{14})$", fontsize=20

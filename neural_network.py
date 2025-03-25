@@ -331,20 +331,20 @@ class NeuralNetwork:
             inputs = Input(shape=(input_dim,))
 
             # First layer with Leaky ReLU
-            x = Dense(120)(inputs)
+            x = Dense(256)(inputs)
             x = LeakyReLU(negative_slope=leaky_alpha)(x)
             x = BatchNormalization()(x)
             x = Dropout(0.3)(x)
 
             # Second layer with Leaky ReLU
-            x = Dense(140)(x)
+            x = Dense(128)(x)
             x = LeakyReLU(negative_slope=leaky_alpha)(x)
             x = BatchNormalization()(x)
             x = Dropout(0.2)(x)
 
             # Third layer with Leaky ReLU
             # Note: Fixed the connection - was previously connected to inputs
-            x = Dense(40)(x)
+            x = Dense(64)(x)
             x = LeakyReLU(negative_slope=leaky_alpha)(x)
             x = BatchNormalization()(x)
             x = Dropout(0.3)(x)
@@ -404,7 +404,7 @@ class NeuralNetwork:
             X_train_scaled,
             y_train,
             sample_weight=weights_train,
-            epochs=150,
+            epochs=100,
             batch_size=128,  # Smaller batch size for better generalization
             validation_data=(X_val_scaled, y_val, weights_val),
             callbacks=callbacks,
@@ -438,15 +438,11 @@ class NeuralNetwork:
         self.save_model()
 
     def categorise_data(self):
-        THRESHOLD = 0.6
+        THRESHOLD = 0.4
 
-        # Beginning purity
-        startPurity = len(self.MC_data[self.MC_data["category"] == 1]) / float(
-            len(self.MC_data)
-        )
-        print(f"Start purity: {startPurity}")
-
-        # X = self.MC_data.drop(columns=['category', 'weight']) # Don't use category or weight for neural net
+        X = self.MC_data.drop(
+            columns=["category", "weight"]
+        )  # Don't use category or weight for neural net
         # x_scaled = self.scaler.transform(X)
         # MC_confidence = self.model.predict(x_scaled)
 
@@ -457,11 +453,11 @@ class NeuralNetwork:
 
         # print(f"Purity: {(count / float(len(self.MC_data))):.2f}")
 
-        # y = self.MC_data["category"].copy()
+        y = self.MC_data["category"].copy()
 
-        # THRESHOLD = self.optimize_threshold_for_purity(self.model, X, y)
+        # self.optimize_threshold_for_purity(self.model, X, y)
 
-        if self.model == None or self.scaler == None:
+        if self.model is None or self.scaler is None:
             return
 
         self.data = self.data.drop(
@@ -491,310 +487,3 @@ class NeuralNetwork:
                 self.MC_data.at[index, "background"] = False
             else:
                 self.MC_data.at[index, "background"] = True
-
-        # Calculate purity
-
-        self.MC_data["category"] = categories
-
-        count = 0
-        for index, row in self.MC_data.iterrows():
-            if (
-                not self.MC_data.at[index, "background"]
-                and self.MC_data.at[index, "category"] == 1
-            ):
-                count += 1
-
-        print(f"Purity: {count / float(len(self.MC_data)):.2f}")
-
-    def optimize_threshold_for_purity(self, model, X_test, y_test, target_purity=0.89):
-        """
-        Find a threshold that optimizes for purity while considering selection efficiency.
-
-        Efficiency = Fraction of total data remaining after selection (selected/total)
-        Purity = Fraction of selected data that is truly class 1 (true_class1/selected)
-
-        Args:
-            model: Trained model
-            X_test: Test features
-            y_test: Test targets
-            target_purity: Minimum desired purity for class 1
-        """
-        print("\n--- Purity Optimization with Corrected Definitions ---")
-        print(
-            f"Finding threshold that achieves at least {
-                target_purity:.2f
-            } purity while maximizing selection efficiency"
-        )
-
-        # Get prediction probabilities
-        y_pred_prob = model.predict(X_test).flatten()
-
-        # Calculate total number of samples
-        total_samples = len(y_test)
-        total_class1 = np.sum(y_test)
-        total_class0 = total_samples - total_class1
-
-        # Try a range of thresholds with finer granularity
-        thresholds = np.linspace(0.1, 0.99, 40)  # Detailed threshold search
-        results = []
-
-        for threshold in thresholds:
-            # Apply threshold
-            y_pred = (y_pred_prob >= threshold).astype(int)
-
-            # Calculate confusion matrix elements
-            tn, fp, fn, tp = confusion_matrix(y_test, y_pred).ravel()
-
-            # Calculate metrics with your definitions
-            selected_samples = tp + fp  # Total samples classified as class 1
-
-            # Calculate purity: fraction of selected data that is truly class 1
-            purity = tp / selected_samples if selected_samples > 0 else 0
-
-            # Calculate efficiency: fraction of total data that remains after selection
-            selection_efficiency = selected_samples / total_samples
-
-            # Calculate signal efficiency (traditional recall): fraction of class 1 correctly identified
-            signal_efficiency = tp / total_class1 if total_class1 > 0 else 0
-
-            # Calculate background rejection: fraction of class 0 correctly rejected
-            background_rejection = tn / total_class0 if total_class0 > 0 else 0
-
-            # Calculate a custom score that prioritizes thresholds meeting target purity
-            if purity >= target_purity:
-                # If we meet the target purity, the score is the selection efficiency
-                custom_score = selection_efficiency
-            else:
-                # If we don't meet target purity, penalize proportional to how far we are
-                purity_shortfall = target_purity - purity
-                custom_score = selection_efficiency - (
-                    purity_shortfall * 5
-                )  # Penalty for not meeting purity
-
-            results.append(
-                {
-                    "threshold": threshold,
-                    "purity": purity,
-                    "selection_efficiency": selection_efficiency,  # New definition: fraction of total data kept
-                    "signal_efficiency": signal_efficiency,  # Traditional recall: fraction of class 1 captured
-                    "background_rejection": background_rejection,  # Fraction of class 0 correctly rejected
-                    "selected_samples": selected_samples,  # Absolute number of samples selected
-                    "custom_score": custom_score,
-                }
-            )
-
-        # Convert to DataFrame for easier analysis
-        results_df = pd.DataFrame(results)
-
-        # Find all thresholds that meet the target purity
-        meets_target = results_df[results_df["purity"] >= target_purity]
-
-        if meets_target.empty:
-            # If no threshold meets the target, find the one with highest purity
-            print(f"No threshold achieves the target purity of {target_purity:.2f}")
-            best_idx = results_df["purity"].idxmax()
-        else:
-            # Find the threshold with highest selection efficiency among those meeting target purity
-            best_idx = meets_target["selection_efficiency"].idxmax()
-
-        best_threshold = results_df.loc[best_idx, "threshold"]
-        best_purity = results_df.loc[best_idx, "purity"]
-        best_efficiency = results_df.loc[best_idx, "selection_efficiency"]
-
-        # Sort results by purity for display
-        print(f"\nTop threshold options by purity:")
-        print(
-            results_df.sort_values("purity", ascending=False)
-            .head(5)[
-                ["threshold", "purity", "selection_efficiency", "selected_samples"]
-            ]
-            .to_string(index=False)
-        )
-
-        # Sort results by selection efficiency for display
-        print(
-            f"\nTop threshold options by selection efficiency (fraction of data kept):"
-        )
-        print(
-            results_df.sort_values("selection_efficiency", ascending=False)
-            .head(5)[
-                ["threshold", "purity", "selection_efficiency", "selected_samples"]
-            ]
-            .to_string(index=False)
-        )
-
-        # Show options that meet target purity
-        if not meets_target.empty:
-            print(f"\nThreshold options meeting target purity of {target_purity:.2f}:")
-            print(
-                meets_target.sort_values("selection_efficiency", ascending=False)
-                .head(5)[
-                    ["threshold", "purity", "selection_efficiency", "selected_samples"]
-                ]
-                .to_string(index=False)
-            )
-
-        # Evaluate with the best threshold
-        y_pred_optimal = (y_pred_prob >= best_threshold).astype(int)
-        selected_samples = np.sum(y_pred_optimal)
-
-        print(
-            f"\nOptimal threshold for purity >= {target_purity:.2f}: {best_threshold:.4f}"
-        )
-        print(
-            f"Achieved purity: {best_purity:.4f}, Selection efficiency: {best_efficiency:.4f}"
-        )
-        print(
-            f"Number of samples selected: {selected_samples} out of {total_samples} ({
-                selected_samples / total_samples * 100:.2f
-            }%)"
-        )
-        print(f"Performance at optimal threshold:")
-        print(classification_report(y_test, y_pred_optimal))
-
-        # Plot threshold vs metrics
-        plt.figure(figsize=(12, 6))
-        plt.plot(results_df["threshold"], results_df["purity"], "r-", label="Purity")
-        plt.plot(
-            results_df["threshold"],
-            results_df["selection_efficiency"],
-            "b-",
-            label="Efficiency",
-        )
-        # plt.plot(results_df['threshold'], results_df['signal_efficiency'], 'g-', label='Signal Efficiency (Recall)')
-        # plt.plot(results_df['threshold'], results_df['background_rejection'], 'm-', label='Background Rejection')
-
-        # Add horizontal line for target purity
-        # plt.axhline(y=target_purity, color='k', linestyle='--', label=f'Target Purity: {target_purity:.2f}')
-
-        # Add vertical line for best threshold
-        # plt.axvline(x=best_threshold, color='y', linestyle='--', label=f'Optimal Threshold: {best_threshold:.3f}')
-
-        plt.xlabel("Threshold")
-        plt.ylabel("Metric Value")
-        plt.title("Threshold vs. Purity and Efficiency Metrics")
-        plt.legend(loc="best")
-        plt.grid(True, alpha=0.3)
-        plt.minorticks_on()
-        plt.grid(which="minor", linestyle=":", linewidth="0.5", color="gray", alpha=0.5)
-        plt.savefig("revised_purity_optimization.png")
-        plt.close()
-        print(
-            "Revised purity optimization plot saved to 'revised_purity_optimization.png'"
-        )
-
-        return best_threshold
-
-    def plot_training_history(self, history):
-        """Plot the training and validation metrics"""
-        plt.figure(figsize=(12, 5))
-
-        # Plot loss
-        plt.subplot(1, 2, 1)
-        plt.plot(history.history["loss"], label="Training Loss")
-        plt.plot(history.history["val_loss"], label="Validation Loss")
-        plt.title("Loss Over Epochs")
-        plt.xlabel("Epoch")
-        plt.ylabel("Loss")
-        plt.legend()
-
-        # Plot accuracy
-        plt.subplot(1, 2, 2)
-        plt.plot(history.history["accuracy"], label="Training Accuracy")
-        plt.plot(history.history["val_accuracy"], label="Validation Accuracy")
-        plt.title("Accuracy Over Epochs")
-        plt.xlabel("Epoch")
-        plt.ylabel("Accuracy")
-        plt.legend()
-
-        plt.tight_layout()
-        plt.savefig("training_history.png")
-        plt.close()
-        print("Training history plot saved to 'training_history.png'")
-
-    def feature_importance_analysis(
-        self, model, X_train, y_train, X_test, y_test, feature_names
-    ):
-        """
-        Perform multiple feature importance analyses using different methods
-        """
-        print("\n--- Feature Importance Analysis ---")
-
-        # Method 1: Simple permutation importance using manual implementation
-        # since scikit-learn's implementation is having compatibility issues
-        def get_model_score(X, y):
-            y_pred = model.predict(X).flatten()
-            return roc_auc_score(y, y_pred)
-
-        # Get baseline score
-        baseline_score = get_model_score(X_test, y_test)
-        print(f"Baseline ROC AUC score: {baseline_score:.4f}")
-
-        # Calculate feature importance through permutation
-        importances = []
-        importances_std = []
-
-        for i in range(len(feature_names)):
-            feature_scores = []
-            for _ in range(5):  # Run 5 iterations for each feature
-                # Create a copy of the test data
-                X_permuted = X_test.copy()
-                # Permute one feature
-                np.random.shuffle(X_permuted[:, i])
-                # Calculate new score
-                permuted_score = get_model_score(X_permuted, y_test)
-                # Store importance as decrease in performance
-                feature_scores.append(baseline_score - permuted_score)
-
-            importances.append(np.mean(feature_scores))
-            importances_std.append(np.std(feature_scores))
-
-        # Create DataFrame for easier reading
-        perm_importance_df = pd.DataFrame(
-            {
-                "Feature": feature_names,
-                "Importance": importances,
-                "StdDev": importances_std,
-            }
-        )
-        perm_importance_df = perm_importance_df.sort_values(
-            "Importance", ascending=False
-        )
-
-        print("\nPermutation Feature Importance:")
-        print(perm_importance_df)
-
-        # Plot permutation importance
-        plt.figure(figsize=(12, 6))
-        plt.barh(perm_importance_df["Feature"], perm_importance_df["Importance"])
-        plt.xlabel("Importance (Decrease in ROC AUC)")
-        plt.title("Feature Importance by Permutation")
-        plt.tight_layout()
-        plt.savefig("permutation_importance.png")
-        plt.close()
-        print("Permutation importance plot saved to 'permutation_importance.png'")
-
-        # Method 2: SHAP values for more detailed analysis
-        try:
-            # Create explainer for the model
-            explainer = shap.DeepExplainer(
-                model, X_train[:100]
-            )  # Use a subset for efficiency
-
-            # Calculate SHAP values
-            shap_values = explainer.shap_values(X_test[:100])
-
-            # Plot summary
-            plt.figure()
-            shap.summary_plot(
-                shap_values[0], X_test[:100], feature_names=feature_names, show=False
-            )
-            plt.tight_layout()
-            plt.savefig("shap_summary.png")
-            plt.close()
-            print("SHAP summary plot saved to 'shap_summary.png'")
-        except Exception as e:
-            print(f"SHAP analysis failed: {e}")
-            print("Continuing with other methods...")
-
-        return perm_importance_df
