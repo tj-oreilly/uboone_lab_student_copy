@@ -467,6 +467,7 @@ def main():
 
     print(f"Minimum (theta, m): {min_loc}")
     print(f"Minimum chi squared: {min_chi_squared}")
+    print(f"Reduce chi squared: {min_chi_squared / (BINS - 2)}")
 
     # Scale the \sin^2{\theta_{12}} value into \sin^2{\theta_{14}} in the 4-flavour model
     scaled_theta = (1 - np.sqrt(1 - yv)) * (1 - np.sqrt(1 - 0.24))
