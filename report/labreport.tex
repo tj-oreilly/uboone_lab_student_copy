@@ -1,0 +1,278 @@
+\documentclass[reprint,
+    nofootinbib,
+    amsmath,amssymb,
+    aps,
+    10pt,
+    nolongbibliography,
+]{revtex4-2}
+
+\bibliographystyle{ieeetr}
+
+\usepackage{graphicx}
+\usepackage{dcolumn}
+\usepackage{bm}
+\usepackage{hyperref}
+\usepackage{svg}
+\usepackage{float}
+\usepackage{tikz}
+\usepackage{layouts}
+\usepackage{tikz-feynman}
+\svgsetup{inkscapelatex=true}
+
+\usepackage{graphicx}
+\usepackage{pgf}
+
+\usepackage{amsmath} % or mathtools
+\newcommand{\mathdefault}[1]{#1}
+
+\renewcommand{\thesection}{\arabic{section}}
+\renewcommand{\thesubsection}{\thesection.\arabic{subsection}}
+\renewcommand{\thesubsubsection}{\thesubsection.\arabic{subsubsection}}
+
+\makeatletter
+\renewcommand{\p@subsection}{}
+\renewcommand{\p@subsubsection}{}
+\makeatother
+
+\usepackage[a4paper, margin=2cm]{geometry}
+
+\setlength{\parindent}{0pt}
+\linespread{0.94}
+
+\usepackage{titlesec}
+\titlespacing\section{0pt}{12pt plus 4pt minus 2pt}{6pt plus 2pt minus 2pt}
+\titlespacing\subsection{0pt}{5pt plus 4pt minus 2pt}{5pt plus 2pt minus 2pt}
+\titlespacing\subsubsection{0pt}{4pt plus 4pt minus 2pt}{4pt plus 2pt minus 2pt}
+
+\titleformat*{\section}{\raggedright\bf\MakeUppercase}
+\titleformat*{\subsection}{\itshape}
+
+\begin{document}
+
+\title{\Large MicroBooNE Sterile Neutrino Search through Muon Neutrino Disappearance \\[0.2cm]
+ \normalsize Third Year Lab Report}
+
+\author{Tavis O'Reilly (10903943)}
+\affiliation{Department of Physics and Astronomy, University of Manchester}
+
+\collaboration{Experiment performed in collaboration with Eliott Menard}
+\date{\today}
+
+\begin{abstract}
+\normalsize
+\noindent
+This lab report aims to search for evidence supporting the existence of the sterile neutrino, using
+data from the Fermilab MicroBooNE experiment. Using machine learning, we categorise the detected
+particles from their track data, identifying the muon neutrinos ($\nu_\mu$). The
+energy distribution of these $\nu_\mu$ is then compared to Monte Carlo simulation data which includes the
+sterile neutrino. The $\chi^2$ of this for different parameters of the sterile neutrino was calculated, 
+excluding a large region of the parameter space at 90\% confidence. This coincided well with the
+inclusion regions at 90\% from data gathered in the previous neutrino experiments LSND and MiniBooNE.
+
+\end{abstract}
+
+\maketitle
+
+\section{Introduction}
+
+The MicroBooNE experiment at Fermilab consists of a 170-ton liquid-argon time projection chamber 
+(LArTPC)\cite{microboone},
+which allows the detection of neutrinos originating from the Booster Neutrino Beam (BNB). One of the key
+aims of this expriment is to further investigate the $4.8\sigma$ low-energy neutrino excess found in the
+previous MiniBooNE experiment\cite{miniboone_excess}. \\
+
+One proposed explanation for this excess is a fourth neutrino flavour -- the sterile neutrino. Using 
+data from MicroBooNE, we will attempt to exclude regions of the possible parameter space for the
+properties of this proposed new particle.
+
+\section{Theory}
+
+\subsection{Neutrino Flavour Oscillation}
+
+A neutrino is a type of lepton that only interacts via the weak force. They have three flavours in
+the Standard Model, labelled $\nu_e$, $\nu_\mu$, and $\nu_\tau$. Due to the fact that the neutrino
+flavour and mass eigenstates for the are not the same, a neutrino produced in one flavour state may be
+detected as a different flavour. The flavour and mass eigenstates are related by the PMNS matrix\cite{pmns}, 
+which for a simple two-flavour model is
+\begin{equation}
+    \begin{pmatrix}
+        \nu_\alpha \\ \nu_\beta
+    \end{pmatrix}
+    = \begin{pmatrix}
+        \cos{\theta} & \sin{\theta} \\
+        -\sin{\theta} & \cos{\theta}
+    \end{pmatrix} \begin{pmatrix}
+        \nu_1 \\ \nu_2
+    \end{pmatrix},
+\end{equation}
+where $\theta$ is the mixing angle between the mass and flavour eigenstates. The flavour components
+are $\nu_\alpha$ and $\nu_\beta$, and the mass components are $\nu_1$ and $\nu_2$. The probability of a
+flavour disappearance (a change of flavour away from the original) in this model is given by 
+\begin{equation}
+    P(\alpha \to \beta) = \sin^2{\left(2\theta\right)}\sin^2{\left(1.27 \frac{\Delta m_{12}^2 L}{E}\right)},
+    \label{eqn:mixing_prob}
+\end{equation}
+where $\Delta m_{12}$ is the difference in the two neutrino masses in eV, $L$ is the distance
+travelled in km, and $E$ is the energy of neutrino in GeV.
+
+\pagebreak
+
+\subsection{Sterile Neutrino}
+
+This analysis is investigating the existence of the sterile neutrino, so a four-flavour model is
+required. The full treatment of this would be complex, so the short-baseline approximation will be
+used -- assuming that the oscillation distance is short, and the sterile neutrino has a much greater
+mass than the other three neutrinos. This allows most terms of the probability to be dropped.\\
+
+From this, a formula similar to \autoref{eqn:mixing_prob} for the muon neutrino survival probability
+is obtained.
+\begin{equation}
+    P(\nu_\mu \to \nu_\mu) \approx 1 - \sin^2{\left(2\theta_{\mu\mu}\right)} 
+    \sin^2{\left(1.27 \frac{\Delta m_{14}^2 L}{E}\right)},
+    \label{eqn:survival_prob}
+\end{equation}
+where $\theta_{\mu\mu}$ is an effective mixing angle for muon neutrino survival, $\Delta m_{14}$
+is the mass difference between the electron and sterile neutrino in eV, and the other symbols
+have the same meaning as in \autoref{eqn:mixing_prob}. The electron-sterile neutrino mass difference
+has been used due to the previously stated assumption that the sterile neutrino has a much greater
+mass than the other neutrinos. Hence, $\Delta m_{14} \approx \Delta m_{24} \approx \Delta m_{34}$.\\
+
+Other experiments typically investigate electron neutrino appearance, so
+$\theta_{\mu e}$ -- the effective mixing angle for electron neutrino appearance, is required for
+better comparison. This can be obtained from $\theta_{\mu\mu}$ through
+\begin{equation}
+    \sin^2{\left(2\theta_{\mu e}\right)} = \left(1 - \left|\cos{\left(2\theta_{\mu\mu}\right)} \right|\right)
+    \left(1 - \left|\cos{\left(2\theta_{14}\right)}\right|\right),
+\end{equation}
+where $\theta_{14}$ is the electron-sterile neutrino mixing angle. From MicroBooNE data, the
+best-fit value for this parameter was determined as 
+$\sin^2{\left(2\theta_{14}\right)} = 0.240$\cite{uboone_angle}.
+
+\section{Experiment Setup}
+
+The neutrinos in the BNB are predominantly muon neutrinos. These are sent towards the LArTPC of
+MicroBooNE, where some will with the argon via the weak interaction, for example a charged current
+interaction as shown in \autoref{fig:cc_interaction}. 
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+    \begin{feynman}
+        \diagram[horizontal=a to b] {
+            i1 [particle=\(\nu_\mu\)] -- [fermion] a -- [fermion] f1 [particle=\(\mu^-\)],
+            i2 [particle=\(n\)] -- [fermion] b -- [fermion] f2 [particle=\(p\)],
+            a -- [boson, edge label=\(W^+\)] b,
+        };
+    \end{feynman}
+    \end{tikzpicture}
+    \caption{A Feynmann diagram for a charged current muon neutrino interaction. A muon neutrino
+    exchanges a $W^+$ boson with a neutron, emitting a muon and a proton.}
+    \label{fig:cc_interaction}
+\end{figure}
+
+In this case, the outgoing muon will ionise electrons
+from nearby atoms, which drift towards the sense wires due to an applied electric field. This
+produces a current in the sense wires, allowing 3D reconstruction of the muon particle track.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{img/LArTPC_Concept.pdf}
+    \caption{A diagram showing the setup of the LArTPC and the sense
+    wires used to detect particle tracks. Credit: MicroBooNE collaboration\cite{microboone_tpc}.}
+\end{figure}
+
+From this raw track data, a number of direct measurements are made such as: track length,
+start position, and end position. The initial interaction vertex is also reconstructed as this may
+not always be at the start of a track\cite{interaction_vertex}. From track data, the neutrino's
+energy can also be reconstructed. For muon tracks, as shown in \autoref{fig:muon_track}, they are
+long and straight, making the muon momentum easy to reconstruct as well.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\linewidth]{img/uboone_muon_event.png}
+    \caption{An example muon track from real data at MicroBooNE. Credit: Fermilab.}
+    \label{fig:muon_track}
+\end{figure}
+
+Machine learning can be applied to these data points to categorise tracks, enabling the distinction
+between e.g. cosmic muon tracks, or electron showers (indicating a $\nu_e$). We are interested in
+detecting $\nu_\mu$ originating from the beam only, so the machine learning used will focus on
+identifying this, classifying everything else as background.
+
+\section{Results}
+
+The preprocessed data from the MicroBooNE experiment includes many of the calculated values
+discussed previously, along with two machine learning confidence scores between 0 and 1. One for
+identifying a muon track, and one for identifying an electron shower. \\
+
+There is also Monte Carlo simulation data, combined with external data (the data gathered when the
+beam is off). The Monte Carlo data has no flavour oscillation applied, so that this can be varied
+for different properties of the sterile neutrino.\\
+
+The first step in the analysis of this data is to make some basic cuts to remove non-physical data 
+(for example where energy couldn't be reconstructed). Also to cut data recorded in the
+outer-fiducial volume (10\;cm around the edge), where edge effects are the most prominent. Beyond
+this, other cuts can be made to remove regions of the parameter space with a large percentage of
+background data, as checked in the Monte Carlo simulation data. \\
+
+More sophisticated analysis involved training a neural network on the Monte Carlo data to identify
+a $\nu_\mu$ CC track. With all of the data cuts and the classification of the neural network, the
+data can be split into signal and background as shown in \autoref{fig:signal_background}.
+
+\begin{figure}[H]
+    \centering
+    \input{plots/energy_plot.pgf}  
+    \caption{A histogram plot of how the energy of the detected particles is distributed, showing
+    the categorisation between signal ($\nu_\mu$ CC interactions) in blue and the background data 
+    in red.}
+    \label{fig:signal_background}
+\end{figure}
+
+With the signal data identified, the Monte Carlo data can be modified to include the survival
+probability from \autoref{eqn:survival_prob}. Calculating the $\chi^2$ between the Monte Carlo and 
+real data, across the parameter space of
+possible $\theta_{\mu e}$ and $\Delta m_{14}^2$, we can exclude regions of the parameter space. A
+15\% systematic error on the energy is used, along with the Poisson statistical error. The region we
+excluded is shown in \autoref{fig:exclusion}.
+
+\begin{figure}[H]
+    \centering
+    \input{plots/figure.pgf}   
+    \caption{A plot of the parameter space for the hypothetical sterile neutrino. The possible
+    regions (at 90\% confidence) by LSND and MiniBooNE are shown, along with the calculated
+    excluded region at 90\% confidence for MicroBooNE data (red line).}
+    \label{fig:exclusion}
+\end{figure}
+
+\section{Discussion}
+
+As seen in \autoref{fig:exclusion}, we have excluded (at 90\% confidence) a large region of the
+parameter space for the sterile neutrino. This region is also in good agreement with the 90\% inclusion
+regions from both LSND and MiniBooNE. Regions towards zero in both parameters could not be excluded due
+to the nature of the data. The Monte Carlo data was below the real data, and hence any oscillation
+applied worsened the fit. Despite this, there is a large inclusion region due to the large systematic
+errors used. \\
+
+The systematic error was a large limitation of this analysis. The value of 15\%
+is quite high, and also applied uniformly across all energy ranges which is a conservative
+estimate. If this systematic error could be reduced, more sensitivity, and better exclusion regions
+could be obtained. \\
+
+Using muon neutrino disappearance rather than electron neutrino appearance also helps due to the greater
+number compared to electron neutrinos. This gives greater statistical significance to the results.
+
+
+\section{Conclusion}
+
+In conclusion, the sterile neutrino still represents promising potential for physics beyond the
+standard model, attempting to explain the $4.8\sigma$ low-energy excess observed in the MiniBooNE
+experiment. Using muon neutrino disappearance, rather than electron neutrino appearance, we have
+shown good agreement between our 90\% confidence exclusion region, and the 90\% inclusion regions of
+LSND and MiniBooNE.\\
+
+While this neither proves nor disproves the existence of the sterile neutrino, it provides
+additional data to help narrow down future searches.
+
+\bibliography{labreport}
+
+\end{document}
